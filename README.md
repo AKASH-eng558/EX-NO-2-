@@ -35,9 +35,165 @@ STEP-5: Display the obtained cipher text.
 
 
 Program:
+```
 
+#include <stdio.h>
+#include <string.h>
+#include <ctype.h>
+
+char matrix[5][5];
+
+void generateMatrix(char key[]) {
+    int used[26] = {0};
+    int k = 0;
+
+    used['J' - 'A'] = 1;
+
+    for (int i = 0; key[i]; i++) {
+        char ch = toupper(key[i]);
+
+        if (ch < 'A' || ch > 'Z')
+            continue;
+
+        if (ch == 'J')
+            ch = 'I';
+
+        if (!used[ch - 'A']) {
+            matrix[k / 5][k % 5] = ch;
+            used[ch - 'A'] = 1;
+            k++;
+        }
+    }
+
+    for (char ch = 'A'; ch <= 'Z'; ch++) {
+        if (!used[ch - 'A']) {
+            matrix[k / 5][k % 5] = ch;
+            used[ch - 'A'] = 1;
+            k++;
+        }
+    }
+}
+
+void findPosition(char ch, int *row, int *col) {
+    if (ch == 'J')
+        ch = 'I';
+
+    for (int i = 0; i < 5; i++) {
+        for (int j = 0; j < 5; j++) {
+            if (matrix[i][j] == ch) {
+                *row = i;
+                *col = j;
+                return;
+            }
+        }
+    }
+}
+
+void encrypt(char text[]) {
+    int r1, c1, r2, c2;
+
+    for (int i = 0; text[i]; i += 2) {
+        findPosition(text[i], &r1, &c1);
+        findPosition(text[i + 1], &r2, &c2);
+
+        if (r1 == r2) {
+            text[i] = matrix[r1][(c1 + 1) % 5];
+            text[i + 1] = matrix[r2][(c2 + 1) % 5];
+        }
+        else if (c1 == c2) {
+            text[i] = matrix[(r1 + 1) % 5][c1];
+            text[i + 1] = matrix[(r2 + 1) % 5][c2];
+        }
+        else {
+            text[i] = matrix[r1][c2];
+            text[i + 1] = matrix[r2][c1];
+        }
+    }
+}
+
+void decrypt(char text[]) {
+    int r1, c1, r2, c2;
+
+    for (int i = 0; text[i]; i += 2) {
+        findPosition(text[i], &r1, &c1);
+        findPosition(text[i + 1], &r2, &c2);
+
+        if (r1 == r2) {
+            text[i] = matrix[r1][(c1 + 4) % 5];
+            text[i + 1] = matrix[r2][(c2 + 4) % 5];
+        }
+        else if (c1 == c2) {
+            text[i] = matrix[(r1 + 4) % 5][c1];
+            text[i + 1] = matrix[(r2 + 4) % 5][c2];
+        }
+        else {
+            text[i] = matrix[r1][c2];
+            text[i + 1] = matrix[r2][c1];
+        }
+    }
+}
+
+int main() {
+    char key[100], text[200];
+    char processed[200], encrypted[200];
+    int i, j = 0;
+
+    printf("Enter the key: ");
+    scanf("%99s", key);
+
+    printf("Enter plaintext: ");
+    scanf("%199s", text);
+
+    generateMatrix(key);
+
+    printf("\nPlayfair Matrix:\n");
+
+    for (i = 0; i < 5; i++) {
+        for (int k = 0; k < 5; k++)
+            printf("%c ", matrix[i][k]);
+        printf("\n");
+    }
+
+    for (i = 0; text[i]; i++) {
+        char ch = toupper(text[i]);
+
+        if (ch < 'A' || ch > 'Z')
+            continue;
+
+        if (ch == 'J')
+            ch = 'I';
+
+        if (j > 0 && processed[j - 1] == ch)
+            processed[j++] = 'X';
+
+        processed[j++] = ch;
+    }
+
+    if (j % 2 != 0)
+        processed[j++] = 'X';
+
+    processed[j] = '\0';
+
+    strcpy(encrypted, processed);
+
+    encrypt(encrypted);
+
+    printf("\nEncrypted Text: %s\n", encrypted);
+
+    decrypt(encrypted);
+
+    printf("Decrypted Text: %s\n", encrypted);
+
+    return 0;
+}
+```
 
 
 
 
 Output:
+<img width="481" height="427" alt="image" src="https://github.com/user-attachments/assets/0a34bb2f-a0cc-4174-b9b9-e15469fa7007" />
+
+RESULT:
+The program for playfair cipher method is executed successfully
+
